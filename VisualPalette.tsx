@@ -92,10 +92,8 @@ export default function VisualPalette(props) {
     showAxisLabels = true,
     cornerLabel = "Style / Time",
     cornerTextColor = "#444444",
-    paddingTop = 40,
-    paddingRight = 40,
-    paddingBottom = 40,
-    paddingLeft = 40,
+    paddingX = 24,
+    paddingY = 24,
     showMobileLabels = true,
   } = props
 
@@ -120,7 +118,7 @@ export default function VisualPalette(props) {
       width: "100%",
       backgroundColor,
       color: textColor,
-      padding: `${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px`,
+      padding: `${paddingY}px ${paddingX}px`,
       fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
       minHeight: "200px",
     }}>
@@ -138,13 +136,13 @@ export default function VisualPalette(props) {
             marginBottom: 15,
           }}>
             <div style={{
-              width: "140px",
+              width: "100px",
               flexShrink: 0,
               fontSize: "12px",
               fontWeight: 700,
               color: cornerTextColor,
               textAlign: "right",
-              paddingRight: "20px",
+              paddingRight: "12px",
               textTransform: "uppercase",
             }}>
               {cornerLabel}
@@ -185,10 +183,10 @@ export default function VisualPalette(props) {
           }}>
             {showAxisLabels && (
               <div className="row-label" style={{
-                width: "140px",
+                width: "100px",
                 flexShrink: 0,
                 textAlign: "right",
-                paddingRight: "20px",
+                paddingRight: "12px",
                 fontSize: "14px",
                 fontWeight: 600,
                 color: textColor,
@@ -450,29 +448,19 @@ addPropertyControls(VisualPalette, {
     min: 0,
     max: 40,
   },
-  paddingTop: {
+  paddingX: {
     type: ControlType.Number,
-    title: "Top",
-    defaultValue: 40,
-    group: "Padding",
+    title: "Padding X",
+    defaultValue: 24,
+    min: 0,
+    max: 100,
   },
-  paddingRight: {
+  paddingY: {
     type: ControlType.Number,
-    title: "Right",
-    defaultValue: 40,
-    group: "Padding",
-  },
-  paddingBottom: {
-    type: ControlType.Number,
-    title: "Bottom",
-    defaultValue: 40,
-    group: "Padding",
-  },
-  paddingLeft: {
-    type: ControlType.Number,
-    title: "Left",
-    defaultValue: 40,
-    group: "Padding",
+    title: "Padding Y",
+    defaultValue: 24,
+    min: 0,
+    max: 100,
   },
   showAxisLabels: {
     type: ControlType.Boolean,
