@@ -228,15 +228,16 @@ export default function VisualPalette(props) {
                       transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
                       cursor: "pointer",
                       display: "flex",
-                      aspectRatio: selectedRatio,
+                      flexDirection: "column",
                       borderRadius: borderRadius,
                       minHeight: "100px",
                     }}
                   >
-                    <div style={{
+                    <div className="aspect-ratio-box" style={{
                       width: "100%",
-                      height: "100%",
+                      aspectRatio: selectedRatio,
                       position: "relative",
+                      overflow: "hidden",
                     }}>
                       {imageSrc ? (
                         <img
@@ -275,29 +276,21 @@ export default function VisualPalette(props) {
                         background: overlay,
                         mixBlendMode: blendMode,
                       }} />
-                      {showMobileLabels && (
-                        <div className="mobile-label" style={{
-                          position: "absolute",
-                          bottom: "6px",
-                          left: "6px",
-                          fontSize: "8px",
-                          fontWeight: 800,
-                          color: "#fff",
-                          textTransform: "uppercase",
-                          backgroundColor: "rgba(0,0,0,0.5)",
-                          padding: "3px 6px",
-                          borderRadius: "4px",
-                          pointerEvents: "none",
-                          zIndex: 1,
-                          backdropFilter: "blur(8px)",
-                          letterSpacing: "0.05em",
-                          border: "1px solid rgba(255,255,255,0.1)",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                        }}>
-                          {period.label}
-                        </div>
-                      )}
                     </div>
+                    {showMobileLabels && (
+                      <div className="mobile-label" style={{
+                        marginTop: "8px",
+                        fontSize: "9px",
+                        fontWeight: 700,
+                        color: textColor,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        opacity: 0.8,
+                        textAlign: "center",
+                      }}>
+                        {period.label}
+                      </div>
+                    )}
                     <div className="glow-effect" style={{
                       position: "absolute",
                       top: 0,
@@ -397,6 +390,8 @@ export default function VisualPalette(props) {
               flex-shrink: 0 !important;
               width: 160px !important;
               min-height: auto !important;
+              background: transparent !important;
+              overflow: visible !important;
             }
             .visual-palette .mobile-label {
               display: block !important;
