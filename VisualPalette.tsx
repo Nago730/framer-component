@@ -98,43 +98,9 @@ export default function VisualPalette(props) {
     paddingLeft = 40,
     showMobileLabels = true,
   } = props
+
   const imageSrc = typeof imageUrl === "string" ? imageUrl : imageUrl?.src
-
-  const [containerWidth, setContainerWidth] = useState<number | null>(null)
   const [toast, setToast] = useState<string | null>(null)
-  const containerRef = React.useRef<HTMLDivElement>(null)
-
-  React.useLayoutEffect(() => {
-    if (!containerRef.current) return
-
-    // Initial measurement
-    setContainerWidth(containerRef.current.offsetWidth)
-
-    const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        const newWidth = Math.round(entry.contentRect.width)
-        // Only update if change is significant (> 10px) to prevent resize loops
-        // Especially important when scrollbars toggle or layout shifts
-        setContainerWidth((prev) => {
-          if (prev === null) return newWidth
-          return Math.abs(prev - newWidth) > 10 ? newWidth : prev
-        })
-      }
-    })
-
-    observer.observe(containerRef.current)
-    return () => observer.disconnect()
-  }, [])
-
-  // Use a fallback or wait for measurement to prevent layout jump on mount
-  const isMobile = containerWidth !== null ? containerWidth < 800 : false
-
-  const themedContainerStyle: React.CSSProperties = {
-    ...containerStyle,
-    backgroundColor: backgroundColor,
-    color: textColor,
-    padding: `${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px`,
-  }
 
   // Ratio Mapping
   const ratioMap: Record<string, string> = {
@@ -148,58 +114,102 @@ export default function VisualPalette(props) {
   const selectedRatio = ratioMap[aspectRatio] || "1 / 1"
 
   return (
-    <div ref={containerRef} style={themedContainerStyle}>
+    <div className="visual-palette" style={{
+      display: "flex",
+      flexDirection: "column",
+      width: "100%",
+      backgroundColor,
+      color: textColor,
+      padding: `${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px`,
+      fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+      minHeight: "200px",
+    }}>
       <div style={{
-        ...matrixContainerStyle,
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
         marginTop: showAxisLabels ? "0" : "10px",
       }}>
-        {showAxisLabels && !isMobile && (
-          <div style={{ ...gridRowStyle, marginBottom: 15 }}>
-            <div style={{ ...cornerLabelStyle, color: cornerTextColor }}>
+        {showAxisLabels && (
+          <div className="header-row" style={{
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+            marginBottom: 15,
+          }}>
+            <div style={{
+              width: "140px",
+              flexShrink: 0,
+              fontSize: "12px",
+              fontWeight: 700,
+              color: cornerTextColor,
+              textAlign: "right",
+              paddingRight: "20px",
+              textTransform: "uppercase",
+            }}>
               {cornerLabel}
             </div>
             {periods.map((period) => (
-              <div key={period.label} style={columnHeaderStyle}>
-                <div style={columnHeaderPeriodStyle(period.accent)}>{period.label}</div>
-                <div style={{ ...columnHeaderTimeStyle, color: textColor + "88" }}>{period.time}h</div>
+              <div key={period.label} style={{
+                flex: 1,
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px",
+              }}>
+                <div style={{
+                  fontSize: "10px",
+                  fontWeight: 900,
+                  color: period.accent,
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                }}>{period.label}</div>
+                <div style={{
+                  fontSize: "12px",
+                  color: textColor + "88",
+                  fontWeight: 400,
+                }}>{period.time}h</div>
               </div>
             ))}
           </div>
         )}
 
         {styles.map((style) => (
-          <div key={style.id} style={{
-            ...gridRowStyle,
+          <div key={style.id} className="grid-row" style={{
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
             gap: gap,
             marginBottom: gap,
-            flexDirection: isMobile ? "column" : "row",
-            alignItems: isMobile ? "flex-start" : "center",
           }}>
             {showAxisLabels && (
-              <div style={{
-                ...rowLabelStyle,
+              <div className="row-label" style={{
+                width: "140px",
+                flexShrink: 0,
+                textAlign: "right",
+                paddingRight: "20px",
+                fontSize: "14px",
+                fontWeight: 600,
                 color: textColor,
-                textAlign: isMobile ? "left" : "right",
-                width: isMobile ? "auto" : "140px",
-                marginBottom: isMobile ? "8px" : "0",
+                letterSpacing: "-0.5px",
               }}>
                 {style.name}
               </div>
             )}
 
-            <div style={{
+            <div className="card-container" style={{
               display: "flex",
               flex: 1,
               gap: gap,
               width: "100%",
-              overflowX: isMobile ? "auto" : "visible",
-              paddingBottom: isMobile ? "10px" : "0",
             }}>
               {periods.map((period) => {
                 const { filter, overlay, blendMode } = getVibeStyles(period.label, style.id)
                 return (
                   <div
                     key={`${style.id}-${period.label}`}
+                    className="card-wrapper"
                     onClick={() => {
                       const filterData = `filter: ${filter};`
                       navigator.clipboard.writeText(filterData)
@@ -210,39 +220,96 @@ export default function VisualPalette(props) {
                       }
                     }}
                     style={{
-                      ...cardWrapperStyle,
+                      flex: 1,
+                      minWidth: 0,
+                      position: "relative",
+                      overflow: "hidden",
+                      backgroundColor: "#0d0d0d",
+                      border: "none",
+                      transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
+                      cursor: "pointer",
+                      display: "flex",
                       aspectRatio: selectedRatio,
                       borderRadius: borderRadius,
-                      flexShrink: isMobile ? 0 : 1,
-                      width: isMobile ? "140px" : "auto",
+                      minHeight: "100px",
                     }}
                   >
-                    <div style={cardInnerStyle}>
+                    <div style={{
+                      width: "100%",
+                      height: "100%",
+                      position: "relative",
+                    }}>
                       {imageSrc ? (
                         <img
                           src={imageSrc}
-                          key={imageSrc} // Help React stabilize the image element
+                          alt=""
                           style={{
-                            ...imageStyle,
-                            filter: filter
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            transition: "transform 0.6s ease",
+                            filter: filter,
                           }}
                         />
                       ) : (
-                        <div style={placeholderStyle}>Upload</div>
+                        <div style={{
+                          width: "100%",
+                          height: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "10px",
+                          fontWeight: 600,
+                          color: "#333",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                          background: "linear-gradient(135deg, #111 0%, #0a0a0a 100%)",
+                        }}>Upload</div>
                       )}
                       <div style={{
-                        ...overlayLayerStyle,
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        pointerEvents: "none",
                         background: overlay,
-                        mixBlendMode: blendMode
+                        mixBlendMode: blendMode,
                       }} />
-                      {/* On mobile, show labels inside cards if enabled and it's mobile view */}
-                      {isMobile && showMobileLabels && (
-                        <div style={mobileLabelOverlayStyle}>
+                      {showMobileLabels && (
+                        <div className="mobile-label" style={{
+                          position: "absolute",
+                          bottom: "6px",
+                          left: "6px",
+                          fontSize: "8px",
+                          fontWeight: 800,
+                          color: "#fff",
+                          textTransform: "uppercase",
+                          backgroundColor: "rgba(0,0,0,0.5)",
+                          padding: "3px 6px",
+                          borderRadius: "4px",
+                          pointerEvents: "none",
+                          zIndex: 1,
+                          backdropFilter: "blur(8px)",
+                          letterSpacing: "0.05em",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                        }}>
                           {period.label}
                         </div>
                       )}
                     </div>
-                    <div className="glow-effect" style={glowStyle} />
+                    <div className="glow-effect" style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      opacity: 0,
+                      transition: "opacity 0.3s ease",
+                      pointerEvents: "none",
+                      border: "2px solid rgba(255,255,255,0.3)",
+                    }} />
                   </div>
                 )
               })}
@@ -252,189 +319,77 @@ export default function VisualPalette(props) {
       </div>
 
       {toast && (
-        <div style={toastStyle}>
+        <div style={{
+          position: "fixed",
+          bottom: "30px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          backgroundColor: "#fff",
+          color: "#000",
+          padding: "12px 24px",
+          borderRadius: "100px",
+          fontSize: "13px",
+          fontWeight: 700,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+          zIndex: 1000,
+          animation: "toast-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
+        }}>
           {toast}
         </div>
       )}
 
       <style dangerouslySetInnerHTML={{
         __html: `
-                .glow-effect:hover { opacity: 1 !important; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
-                img:hover { transform: scale(1.08); }
-                @keyframes toast-in {
-                  from { transform: translate(-50%, 20px); opacity: 0; }
-                  to { transform: translate(-50%, 0); opacity: 1; }
-                }
-                ::-webkit-scrollbar { display: none; }
-            `}} />
+          .glow-effect:hover { 
+            opacity: 1 !important; 
+            box-shadow: 0 0 20px rgba(255,255,255,0.2); 
+          }
+          img:hover { 
+            transform: scale(1.08); 
+          }
+          .mobile-label {
+            display: none;
+          }
+          @keyframes toast-in {
+            from { transform: translate(-50%, 20px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+          }
+          
+          /* Responsive: Mobile at 800px */
+          @media (max-width: 800px) {
+            .visual-palette .header-row {
+              display: none !important;
+            }
+            .visual-palette .grid-row {
+              flex-direction: column !important;
+              align-items: flex-start !important;
+            }
+            .visual-palette .row-label {
+              width: auto !important;
+              text-align: left !important;
+              margin-bottom: 8px !important;
+              padding-right: 0 !important;
+            }
+            .visual-palette .card-container {
+              overflow-x: auto !important;
+              padding-bottom: 10px !important;
+            }
+            .visual-palette .card-wrapper {
+              flex-shrink: 0 !important;
+              width: 140px !important;
+            }
+            .visual-palette .mobile-label {
+              display: block !important;
+            }
+          }
+          
+          /* Hide scrollbar */
+          ::-webkit-scrollbar { 
+            display: none; 
+          }
+        `}} />
     </div>
   )
-}
-
-// --- Styles ---
-
-const matrixContainerStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-}
-
-const cardWrapperStyle: React.CSSProperties = {
-  flex: 1,
-  minWidth: 0,
-  position: "relative",
-  overflow: "hidden",
-  backgroundColor: "#0d0d0d",
-  border: "none",
-  transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
-  cursor: "pointer",
-  display: "flex",
-}
-
-const cardInnerStyle: React.CSSProperties = {
-  width: "100%",
-  height: "100%",
-  position: "relative",
-}
-
-const imageStyle: React.CSSProperties = {
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-  transition: "transform 0.6s ease",
-}
-
-const overlayLayerStyle: React.CSSProperties = {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  pointerEvents: "none",
-}
-
-const gridRowStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  width: "100%",
-}
-
-const cornerLabelStyle: React.CSSProperties = {
-  width: "140px",
-  flexShrink: 0,
-  fontSize: "12px",
-  fontWeight: 700,
-  color: "#444",
-  textAlign: "right",
-  paddingRight: "20px",
-  textTransform: "uppercase",
-}
-
-const columnHeaderStyle: React.CSSProperties = {
-  flex: 1,
-  textAlign: "center",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: "4px",
-}
-
-const columnHeaderPeriodStyle = (color: string): React.CSSProperties => ({
-  fontSize: "10px",
-  fontWeight: 900,
-  color: color,
-  textTransform: "uppercase",
-  letterSpacing: "1px",
-})
-
-const columnHeaderTimeStyle: React.CSSProperties = {
-  fontSize: "12px",
-  color: "#666",
-  fontWeight: 400,
-}
-
-const rowLabelStyle: React.CSSProperties = {
-  width: "140px",
-  flexShrink: 0,
-  textAlign: "right",
-  paddingRight: "20px",
-  fontSize: "14px",
-  fontWeight: 600,
-  color: "#eee",
-  letterSpacing: "-0.5px",
-}
-
-// --- Styles ---
-
-const containerStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-  backgroundColor: "#050505",
-  color: "white",
-  fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
-  overflowX: "hidden",
-}
-
-const glowStyle = {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  opacity: 0,
-  transition: "opacity 0.3s ease",
-  pointerEvents: "none",
-  border: "2px solid rgba(255,255,255,0.3)",
-}
-
-const placeholderStyle: React.CSSProperties = {
-  width: "100%",
-  height: "100%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: "10px",
-  fontWeight: 600,
-  color: "#333",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  background: "linear-gradient(135deg, #111 0%, #0a0a0a 100%)",
-}
-
-const toastStyle: React.CSSProperties = {
-  position: "fixed",
-  bottom: "30px",
-  left: "50%",
-  transform: "translateX(-50%)",
-  backgroundColor: "#fff",
-  color: "#000",
-  padding: "12px 24px",
-  borderRadius: "100px",
-  fontSize: "13px",
-  fontWeight: 700,
-  boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-  zIndex: 1000,
-  animation: "toast-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
-}
-
-const mobileLabelOverlayStyle: React.CSSProperties = {
-  position: "absolute",
-  bottom: "6px",
-  left: "6px",
-  fontSize: "8px",
-  fontWeight: 800,
-  color: "#fff",
-  textTransform: "uppercase",
-  backgroundColor: "rgba(0,0,0,0.5)",
-  padding: "3px 6px",
-  borderRadius: "4px",
-  pointerEvents: "none",
-  zIndex: 1,
-  backdropFilter: "blur(8px)",
-  letterSpacing: "0.05em",
-  border: "1px solid rgba(255,255,255,0.1)",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
 }
 
 // --- Framer Property Controls ---
@@ -542,7 +497,6 @@ addPropertyControls(VisualPalette, {
     defaultValue: "#444444",
     visible: (props) => props.showAxisLabels,
   },
-  // Theme Group
   backgroundColor: {
     type: ControlType.Color,
     title: "Background",
