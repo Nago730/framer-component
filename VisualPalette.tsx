@@ -7,7 +7,7 @@ import React, { useState } from "react"
  * @framerIntrinsicHeight 800
  * @framerSupportedLayout fixed, relative
  * 
- * VariationGrid: Professional filter matrix component for Framer.
+ * VisualPalette: Professional filter matrix component for Framer.
  */
 
 // Default Data
@@ -78,7 +78,7 @@ function getVibeStyles(periodLabel, styleId) {
   return { filter, overlay, blendMode }
 }
 
-export default function VariationGrid(props) {
+export default function VisualPalette(props) {
   const {
     imageUrl,
     gap = 8,
@@ -439,7 +439,7 @@ const mobileLabelOverlayStyle: React.CSSProperties = {
 
 // --- Framer Property Controls ---
 
-addPropertyControls(VariationGrid, {
+addPropertyControls(VisualPalette, {
   imageUrl: {
     type: ControlType.Image,
     title: "Image",
