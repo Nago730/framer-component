@@ -1,15 +1,17 @@
+// @ts-nocheck
 import { addPropertyControls, ControlType } from "framer"
 import React, { useState } from "react"
 
 /**
- * VariationGrid Component
- * 72가지의 프리미엄 필터 조합을 그리드 형태로 보여주는 시각적 전시 컴포넌트입니다.
- * 단순 필터를 넘어 그라데이션 오버레이와 블렌드 모드를 사용하여 
- * 전문가 수준의 사진 보정 효과를 구현합니다.
+ * @framerIntrinsicWidth 1200
+ * @framerIntrinsicHeight 800
+ * @framerSupportedLayout fixed, relative
+ * 
+ * VariationGrid: Professional filter matrix component for Framer.
  */
 
-// 1. 데이터 정의 (시간대 & 스타일 카테고리)
-const periods = [
+// Default Data
+const defaultPeriods = [
   { label: "Dawn", time: 5, accent: "#4A90E2" },
   { label: "Morning", time: 9, accent: "#F5A623" },
   { label: "Noon", time: 13, accent: "#FFF" },
@@ -18,7 +20,7 @@ const periods = [
   { label: "Night", time: 1, accent: "#222" },
 ]
 
-const styles = [
+const defaultStyles = [
   { name: "Cinematic", id: "cine" },
   { name: "Vintage Film", id: "film" },
   { name: "Cyberpunk", id: "cyber" },
@@ -27,13 +29,12 @@ const styles = [
   { name: "Vivid Pop", id: "pop" },
 ]
 
-// 2. 필터 프리셋 엔진 (CSS Filter + Blend Mode Overlay)
-function getVibeStyles(periodLabel: string, styleId: string): { filter: string, overlay: string, blendMode: React.CSSProperties["mixBlendMode"] } {
+// Filter Presets & Engine
+function getVibeStyles(periodLabel, styleId) {
   let filter = "brightness(1) contrast(1) saturate(1)"
   let overlay = "transparent"
-  let blendMode: React.CSSProperties["mixBlendMode"] = "normal"
+  let blendMode = "normal"
 
-  // 스타일별 기본값
   switch (styleId) {
     case "cine":
       filter = "brightness(0.9) contrast(1.2) saturate(0.8) sepia(0.2)"
@@ -66,7 +67,6 @@ function getVibeStyles(periodLabel: string, styleId: string): { filter: string, 
       break
   }
 
-  // 시간대별 추가 보정 (색온도 조절)
   if (periodLabel === "Dawn" || periodLabel === "Dusk") {
     filter += " hue-rotate(20deg) brightness(0.8)"
   } else if (periodLabel === "Evening") {
@@ -79,11 +79,65 @@ function getVibeStyles(periodLabel: string, styleId: string): { filter: string, 
 }
 
 export default function VariationGrid(props) {
-  const { imageUrl, gap, borderRadius, aspectRatio, showLabels } = props
+  const {
+    imageUrl,
+    gap = 8,
+    borderRadius = 8,
+    aspectRatio,
+    periods = defaultPeriods,
+    styles = defaultStyles,
+    onFilterSelect,
+    backgroundColor = "#050505",
+    textColor = "#ececec",
+    showAxisLabels = true,
+    cornerLabel = "Style / Time",
+    cornerTextColor = "#444444",
+    paddingTop = 40,
+    paddingRight = 40,
+    paddingBottom = 40,
+    paddingLeft = 40,
+    showMobileLabels = true,
+  } = props
   const imageSrc = typeof imageUrl === "string" ? imageUrl : imageUrl?.src
 
-  // 종횡비 매핑
-  const ratioMap = {
+  const [containerWidth, setContainerWidth] = useState<number | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  React.useLayoutEffect(() => {
+    if (!containerRef.current) return
+
+    // Initial measurement
+    setContainerWidth(containerRef.current.offsetWidth)
+
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const newWidth = Math.round(entry.contentRect.width)
+        // Only update if change is significant (> 10px) to prevent resize loops
+        // Especially important when scrollbars toggle or layout shifts
+        setContainerWidth((prev) => {
+          if (prev === null) return newWidth
+          return Math.abs(prev - newWidth) > 10 ? newWidth : prev
+        })
+      }
+    })
+
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
+
+  // Use a fallback or wait for measurement to prevent layout jump on mount
+  const isMobile = containerWidth !== null ? containerWidth < 800 : false
+
+  const themedContainerStyle: React.CSSProperties = {
+    ...containerStyle,
+    backgroundColor: backgroundColor,
+    color: textColor,
+    padding: `${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px`,
+  }
+
+  // Ratio Mapping
+  const ratioMap: Record<string, string> = {
     "1/1": "1 / 1",
     "4/3": "4 / 3",
     "3/4": "3 / 4",
@@ -94,72 +148,124 @@ export default function VariationGrid(props) {
   const selectedRatio = ratioMap[aspectRatio] || "1 / 1"
 
   return (
-    <div style={containerStyle}>
-      {/* Header Area */}
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>Vibe Matrix</h1>
-        <p style={subtitleStyle}>Professional Photo Preset Matrix (Styles × Time)</p>
-      </div>
-
-      <div style={matrixContainerStyle}>
-        {/* 상단 시간(Column) 레이블 */}
-        <div style={{ ...gridRowStyle, marginBottom: 15 }}>
-          <div style={cornerLabelStyle}>Vibe / Time</div>
-          {periods.map((period) => (
-            <div key={period.label} style={columnHeaderStyle}>
-              <div style={columnHeaderPeriodStyle(period.accent)}>{period.label}</div>
-              <div style={columnHeaderTimeStyle}>{period.time}h</div>
+    <div ref={containerRef} style={themedContainerStyle}>
+      <div style={{
+        ...matrixContainerStyle,
+        marginTop: showAxisLabels ? "0" : "10px",
+      }}>
+        {showAxisLabels && !isMobile && (
+          <div style={{ ...gridRowStyle, marginBottom: 15 }}>
+            <div style={{ ...cornerLabelStyle, color: cornerTextColor }}>
+              {cornerLabel}
             </div>
-          ))}
-        </div>
+            {periods.map((period) => (
+              <div key={period.label} style={columnHeaderStyle}>
+                <div style={columnHeaderPeriodStyle(period.accent)}>{period.label}</div>
+                <div style={{ ...columnHeaderTimeStyle, color: textColor + "88" }}>{period.time}h</div>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* 스타일(Row) 기반 그리드 생성 */}
         {styles.map((style) => (
-          <div key={style.id} style={{ ...gridRowStyle, gap: gap, marginBottom: gap }}>
-            {/* 좌측 스타일(Row) 레이블 */}
-            <div style={rowLabelStyle}>
-              {style.name}
-            </div>
+          <div key={style.id} style={{
+            ...gridRowStyle,
+            gap: gap,
+            marginBottom: gap,
+            flexDirection: isMobile ? "column" : "row",
+            alignItems: isMobile ? "flex-start" : "center",
+          }}>
+            {showAxisLabels && (
+              <div style={{
+                ...rowLabelStyle,
+                color: textColor,
+                textAlign: isMobile ? "left" : "right",
+                width: isMobile ? "auto" : "140px",
+                marginBottom: isMobile ? "8px" : "0",
+              }}>
+                {style.name}
+              </div>
+            )}
 
-            {/* 실제 필터 이미지들 (Columns) */}
-            {periods.map((period) => {
-              const { filter, overlay, blendMode } = getVibeStyles(period.label, style.id)
-              return (
-                <div key={`${style.id}-${period.label}`} style={{
-                  ...cardWrapperStyle,
-                  aspectRatio: selectedRatio,
-                  borderRadius: borderRadius,
-                }}>
-                  <div style={cardInnerStyle}>
-                    {imageSrc ? (
-                      <img
-                        src={imageSrc}
-                        style={{
-                          ...imageStyle,
-                          filter: filter
-                        }}
-                      />
-                    ) : (
-                      <div style={placeholderStyle}>Upload</div>
-                    )}
-                    <div style={{
-                      ...overlayLayerStyle,
-                      background: overlay,
-                      mixBlendMode: blendMode
-                    }} />
+            <div style={{
+              display: "flex",
+              flex: 1,
+              gap: gap,
+              width: "100%",
+              overflowX: isMobile ? "auto" : "visible",
+              paddingBottom: isMobile ? "10px" : "0",
+            }}>
+              {periods.map((period) => {
+                const { filter, overlay, blendMode } = getVibeStyles(period.label, style.id)
+                return (
+                  <div
+                    key={`${style.id}-${period.label}`}
+                    onClick={() => {
+                      const filterData = `filter: ${filter};`
+                      navigator.clipboard.writeText(filterData)
+                      setToast(`${style.name} - ${period.label} Copied!`)
+                      setTimeout(() => setToast(null), 2000)
+                      if (onFilterSelect) {
+                        onFilterSelect({ style: style.name, period: period.label, filter, overlay })
+                      }
+                    }}
+                    style={{
+                      ...cardWrapperStyle,
+                      aspectRatio: selectedRatio,
+                      borderRadius: borderRadius,
+                      flexShrink: isMobile ? 0 : 1,
+                      width: isMobile ? "140px" : "auto",
+                    }}
+                  >
+                    <div style={cardInnerStyle}>
+                      {imageSrc ? (
+                        <img
+                          src={imageSrc}
+                          key={imageSrc} // Help React stabilize the image element
+                          style={{
+                            ...imageStyle,
+                            filter: filter
+                          }}
+                        />
+                      ) : (
+                        <div style={placeholderStyle}>Upload</div>
+                      )}
+                      <div style={{
+                        ...overlayLayerStyle,
+                        background: overlay,
+                        mixBlendMode: blendMode
+                      }} />
+                      {/* On mobile, show labels inside cards if enabled and it's mobile view */}
+                      {isMobile && showMobileLabels && (
+                        <div style={mobileLabelOverlayStyle}>
+                          {period.label}
+                        </div>
+                      )}
+                    </div>
+                    <div className="glow-effect" style={glowStyle} />
                   </div>
-                  <div className="glow-effect" style={glowStyle} />
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         ))}
       </div>
+
+      {toast && (
+        <div style={toastStyle}>
+          {toast}
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{
         __html: `
                 .glow-effect:hover { opacity: 1 !important; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
                 img:hover { transform: scale(1.08); }
+                @keyframes toast-in {
+                  from { transform: translate(-50%, 20px); opacity: 0; }
+                  to { transform: translate(-50%, 0); opacity: 1; }
+                }
+                ::-webkit-scrollbar { display: none; }
             `}} />
     </div>
   )
@@ -171,7 +277,40 @@ const matrixContainerStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  minWidth: "1200px", // 행렬 구조 유지를 위한 최소 너비
+}
+
+const cardWrapperStyle: React.CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  position: "relative",
+  overflow: "hidden",
+  backgroundColor: "#0d0d0d",
+  border: "none",
+  transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
+  cursor: "pointer",
+  display: "flex",
+}
+
+const cardInnerStyle: React.CSSProperties = {
+  width: "100%",
+  height: "100%",
+  position: "relative",
+}
+
+const imageStyle: React.CSSProperties = {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+  transition: "transform 0.6s ease",
+}
+
+const overlayLayerStyle: React.CSSProperties = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  pointerEvents: "none",
 }
 
 const gridRowStyle: React.CSSProperties = {
@@ -230,102 +369,14 @@ const rowLabelStyle: React.CSSProperties = {
 const containerStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  padding: "40px",
   width: "100%",
   backgroundColor: "#050505",
   color: "white",
   fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
-  overflowY: "auto",
+  overflowX: "hidden",
 }
 
-const headerStyle: React.CSSProperties = {
-  marginBottom: "40px",
-  borderLeft: "4px solid #fff",
-  paddingLeft: "20px",
-}
-
-const titleStyle: React.CSSProperties = {
-  fontSize: "32px",
-  fontWeight: 800,
-  margin: 0,
-  letterSpacing: "-1px",
-  textTransform: "uppercase",
-}
-
-const subtitleStyle: React.CSSProperties = {
-  fontSize: "14px",
-  color: "#666",
-  margin: "8px 0 0 0",
-}
-
-const gridStyle: React.CSSProperties = {
-  display: "grid",
-  width: "100%",
-}
-
-const cardWrapperStyle: React.CSSProperties = {
-  flex: 1,
-  minWidth: 0,
-  position: "relative",
-  overflow: "hidden",
-  backgroundColor: "#0d0d0d",
-  border: "1px solid rgba(255,255,255,0.03)",
-  transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
-  cursor: "pointer",
-}
-
-const cardInnerStyle: React.CSSProperties = {
-  width: "100%",
-  height: "100%",
-  position: "relative",
-}
-
-const imageStyle: React.CSSProperties = {
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-  transition: "transform 0.6s ease",
-}
-
-const overlayLayerStyle: React.CSSProperties = {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  pointerEvents: "none",
-}
-
-const labelContainerStyle: React.CSSProperties = {
-  position: "absolute",
-  bottom: "10px",
-  left: "10px",
-  right: "10px",
-  padding: "8px 12px",
-  backgroundColor: "rgba(0,0,0,0.5)",
-  backdropFilter: "blur(10px)",
-  borderRadius: "8px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "4px",
-  border: "1px solid rgba(255,255,255,0.1)",
-}
-
-const styleNameStyle: React.CSSProperties = {
-  fontSize: "11px",
-  fontWeight: 600,
-  color: "#eee",
-}
-
-const periodTagStyle = (color: string): React.CSSProperties => ({
-  fontSize: "9px",
-  fontWeight: 800,
-  color: color,
-  textTransform: "uppercase",
-  letterSpacing: "1px",
-})
-
-const glowStyle: React.CSSProperties = {
+const glowStyle = {
   position: "absolute",
   top: 0,
   left: 0,
@@ -351,37 +402,160 @@ const placeholderStyle: React.CSSProperties = {
   background: "linear-gradient(135deg, #111 0%, #0a0a0a 100%)",
 }
 
+const toastStyle: React.CSSProperties = {
+  position: "fixed",
+  bottom: "30px",
+  left: "50%",
+  transform: "translateX(-50%)",
+  backgroundColor: "#fff",
+  color: "#000",
+  padding: "12px 24px",
+  borderRadius: "100px",
+  fontSize: "13px",
+  fontWeight: 700,
+  boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+  zIndex: 1000,
+  animation: "toast-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
+}
+
+const mobileLabelOverlayStyle: React.CSSProperties = {
+  position: "absolute",
+  bottom: "6px",
+  left: "6px",
+  fontSize: "8px",
+  fontWeight: 800,
+  color: "#fff",
+  textTransform: "uppercase",
+  backgroundColor: "rgba(0,0,0,0.5)",
+  padding: "3px 6px",
+  borderRadius: "4px",
+  pointerEvents: "none",
+  zIndex: 1,
+  backdropFilter: "blur(8px)",
+  letterSpacing: "0.05em",
+  border: "1px solid rgba(255,255,255,0.1)",
+  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+}
+
 // --- Framer Property Controls ---
 
 addPropertyControls(VariationGrid, {
   imageUrl: {
     type: ControlType.Image,
-    title: "이미지 (Image)",
+    title: "Image",
+  },
+  styles: {
+    type: ControlType.Array,
+    title: "Styles (Rows)",
+    control: {
+      type: ControlType.Object,
+      controls: {
+        name: { type: ControlType.String, title: "Name" },
+        id: {
+          type: ControlType.Enum,
+          title: "Preset",
+          options: ["cine", "film", "cyber", "pastel", "noir", "pop"],
+          defaultValue: "cine"
+        },
+      }
+    },
+    defaultValue: defaultStyles,
+  },
+  periods: {
+    type: ControlType.Array,
+    title: "Periods (Cols)",
+    control: {
+      type: ControlType.Object,
+      controls: {
+        label: { type: ControlType.String, title: "Label" },
+        time: { type: ControlType.Number, title: "Time (h)" },
+        accent: { type: ControlType.Color, title: "Accent Color" },
+      }
+    },
+    defaultValue: defaultPeriods,
   },
   aspectRatio: {
     type: ControlType.Enum,
-    title: "비율 (Ratio)",
-    defaultValue: "4/3",
+    title: "Ratio",
+    defaultValue: "1/1",
     options: ["1/1", "4/3", "3/4", "16/9", "9/16", "2/3"],
     optionTitles: ["1:1 (Square)", "4:3 (Landscape)", "3:4 (Portrait)", "16:9 (Wide)", "9:16 (Tall)", "2:3 (Classic)"],
   },
   gap: {
     type: ControlType.Number,
-    title: "간격 (Gap)",
-    defaultValue: 12,
+    title: "Gap",
+    defaultValue: 8,
     min: 0,
     max: 40,
   },
   borderRadius: {
     type: ControlType.Number,
-    title: "곡률 (Radius)",
-    defaultValue: 16,
+    title: "Radius",
+    defaultValue: 8,
     min: 0,
     max: 40,
   },
-  showLabels: {
+  paddingTop: {
+    type: ControlType.Number,
+    title: "Top",
+    defaultValue: 40,
+    group: "Padding",
+  },
+  paddingRight: {
+    type: ControlType.Number,
+    title: "Right",
+    defaultValue: 40,
+    group: "Padding",
+  },
+  paddingBottom: {
+    type: ControlType.Number,
+    title: "Bottom",
+    defaultValue: 40,
+    group: "Padding",
+  },
+  paddingLeft: {
+    type: ControlType.Number,
+    title: "Left",
+    defaultValue: 40,
+    group: "Padding",
+  },
+  showAxisLabels: {
     type: ControlType.Boolean,
-    title: "라벨 표시 (Labels)",
+    title: "Show Labels",
     defaultValue: true,
   },
+  showMobileLabels: {
+    type: ControlType.Boolean,
+    title: "Mobile Labels",
+    defaultValue: true,
+    visible: (props) => props.showAxisLabels,
+  },
+  cornerLabel: {
+    type: ControlType.String,
+    title: "Corner Text",
+    defaultValue: "Style / Time",
+    visible: (props) => props.showAxisLabels,
+  },
+  cornerTextColor: {
+    type: ControlType.Color,
+    title: "Corner Color",
+    defaultValue: "#444444",
+    visible: (props) => props.showAxisLabels,
+  },
+  // Theme Group
+  backgroundColor: {
+    type: ControlType.Color,
+    title: "Background",
+    defaultValue: "#050505",
+    group: "Theme",
+  },
+  textColor: {
+    type: ControlType.Color,
+    title: "Text",
+    defaultValue: "#ececec",
+    group: "Theme",
+  },
+  onFilterSelect: {
+    type: ControlType.EventHandler,
+  }
 })
