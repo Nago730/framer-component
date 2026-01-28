@@ -124,6 +124,7 @@ export default function VisualPalette(props) {
       containerType: "inline-size",
       "--padding-x": `${paddingX}px`,
       "--padding-y": `${paddingY}px`,
+      "--border-radius": `${borderRadius}px`,
     } as React.CSSProperties}>
       <div style={{
         display: "flex",
@@ -231,7 +232,7 @@ export default function VisualPalette(props) {
                       cursor: "pointer",
                       display: "flex",
                       flexDirection: "column",
-                      borderRadius: borderRadius,
+                      borderRadius: "var(--border-radius)",
                     }}
                   >
                     <div className="aspect-ratio-box" style={{
@@ -239,6 +240,7 @@ export default function VisualPalette(props) {
                       aspectRatio: selectedRatio,
                       position: "relative",
                       overflow: "hidden",
+                      borderRadius: "var(--border-radius)",
                     }}>
                       {imageSrc ? (
                         <img
@@ -352,10 +354,6 @@ export default function VisualPalette(props) {
           
           /* --- Tablet Layout (700px to 1000px) --- */
           @container (max-width: 1000px) {
-            .visual-palette {
-              --padding-x: max(16px, calc(${paddingX}px * 0.75)) !important;
-              --padding-y: max(16px, calc(${paddingY}px * 0.75)) !important;
-            }
             .visual-palette .grid-row {
               flex-direction: column !important;
               align-items: flex-start !important;
@@ -382,10 +380,6 @@ export default function VisualPalette(props) {
 
           /* --- Mobile Layout (Under 700px) --- */
           @container (max-width: 700px) {
-            .visual-palette {
-              --padding-x: max(12px, calc(${paddingX}px * 0.5)) !important;
-              --padding-y: max(12px, calc(${paddingY}px * 0.5)) !important;
-            }
             .visual-palette .header-row {
               display: none !important;
             }
