@@ -89,11 +89,12 @@ export default function VisualPalette(props) {
     onFilterSelect,
     backgroundColor = "#050505",
     textColor = "#ececec",
-    showAxisLabels = true,
-    cornerLabel = "Style / Time",
-    cornerTextColor = "#444444",
     paddingX = 24,
     paddingY = 24,
+    showAxisLabels = true,
+    showTimeLabels = true,
+    cornerLabel = "Style / Time",
+    cornerTextColor = "#444444",
     showMobileLabels = true,
   } = props
 
@@ -167,11 +168,13 @@ export default function VisualPalette(props) {
                   textTransform: "uppercase",
                   letterSpacing: "1px",
                 }}>{period.label}</div>
-                <div style={{
-                  fontSize: "12px",
-                  color: textColor + "88",
-                  fontWeight: 400,
-                }}>{period.time}h</div>
+                {showTimeLabels && (
+                  <div style={{
+                    fontSize: "12px",
+                    color: textColor + "88",
+                    fontWeight: 400,
+                  }}>{period.time}h</div>
+                )}
               </div>
             ))}
           </div>
@@ -486,6 +489,12 @@ addPropertyControls(VisualPalette, {
     type: ControlType.Boolean,
     title: "Show Labels",
     defaultValue: true,
+  },
+  showTimeLabels: {
+    type: ControlType.Boolean,
+    title: "Show Time",
+    defaultValue: true,
+    visible: (props) => props.showAxisLabels,
   },
   showMobileLabels: {
     type: ControlType.Boolean,
