@@ -113,233 +113,238 @@ export default function VisualPalette(props) {
   const selectedRatio = ratioMap[aspectRatio] || "1 / 1"
 
   return (
-    <div className="visual-palette" style={{
-      display: "flex",
-      flexDirection: "column",
+    <div className="visual-palette-wrapper" style={{
       width: "100%",
       backgroundColor,
-      color: textColor,
-      padding: `var(--padding-y) var(--padding-x)`,
-      fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
       minHeight: "200px",
-      containerType: "inline-size",
-      "--padding-x": `${paddingX}px`,
-      "--padding-y": `${paddingY}px`,
-      "--border-radius": `${borderRadius}px`,
-    } as React.CSSProperties}>
-      <div style={{
+    }}>
+      <div className="visual-palette" style={{
         display: "flex",
         flexDirection: "column",
         width: "100%",
-        marginTop: showAxisLabels ? "0" : "10px",
-      }}>
-        {showAxisLabels && (
-          <div className="header-row" style={{
-            display: "flex",
-            alignItems: "center",
-            width: "100%",
-            marginBottom: 15,
-          }}>
-            <div style={{
-              width: "100px",
-              flexShrink: 0,
-              fontSize: "12px",
-              fontWeight: 700,
-              color: cornerTextColor,
-              textAlign: "right",
-              paddingRight: "12px",
-              textTransform: "uppercase",
+        maxWidth: "1440px",
+        margin: "0 auto",
+        color: textColor,
+        padding: `var(--padding-y) var(--padding-x)`,
+        fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+        containerType: "inline-size",
+        "--padding-x": `${paddingX}px`,
+        "--padding-y": `${paddingY}px`,
+        "--border-radius": `${borderRadius}px`,
+      } as React.CSSProperties}>
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          marginTop: showAxisLabels ? "0" : "10px",
+        }}>
+          {showAxisLabels && (
+            <div className="header-row" style={{
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+              marginBottom: 15,
             }}>
-              {cornerLabel}
-            </div>
-            {periods.map((period) => (
-              <div key={period.label} style={{
-                flex: 1,
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "4px",
-              }}>
-                <div style={{
-                  fontSize: "10px",
-                  fontWeight: 900,
-                  color: period.accent,
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                }}>{period.label}</div>
-                {showTimeLabels && (
-                  <div style={{
-                    fontSize: "12px",
-                    color: textColor + "88",
-                    fontWeight: 400,
-                  }}>{period.time}h</div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {styles.map((style) => (
-          <div key={style.id} className="grid-row" style={{
-            display: "flex",
-            alignItems: "center",
-            width: "100%",
-            gap: gap,
-            marginBottom: gap,
-          }}>
-            {showAxisLabels && (
-              <div className="row-label" style={{
+              <div style={{
                 width: "100px",
                 flexShrink: 0,
+                fontSize: "12px",
+                fontWeight: 700,
+                color: cornerTextColor,
                 textAlign: "right",
                 paddingRight: "12px",
-                fontSize: "14px",
-                fontWeight: 600,
-                color: textColor,
-                letterSpacing: "-0.5px",
+                textTransform: "uppercase",
               }}>
-                {style.name}
+                {cornerLabel}
               </div>
-            )}
+              {periods.map((period) => (
+                <div key={period.label} style={{
+                  flex: 1,
+                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "4px",
+                }}>
+                  <div style={{
+                    fontSize: "10px",
+                    fontWeight: 900,
+                    color: period.accent,
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                  }}>{period.label}</div>
+                  {showTimeLabels && (
+                    <div style={{
+                      fontSize: "12px",
+                      color: textColor + "88",
+                      fontWeight: 400,
+                    }}>{period.time}h</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
-            <div className="card-container" style={{
+          {styles.map((style) => (
+            <div key={style.id} className="grid-row" style={{
               display: "flex",
-              flex: 1,
-              gap: gap,
+              alignItems: "center",
               width: "100%",
+              gap: gap,
+              marginBottom: gap,
             }}>
-              {periods.map((period) => {
-                const { filter, overlay, blendMode } = getVibeStyles(period.label, style.id)
-                return (
-                  <div
-                    key={`${style.id}-${period.label}`}
-                    className="card-wrapper"
-                    onClick={() => {
-                      const filterData = `filter: ${filter};`
-                      navigator.clipboard.writeText(filterData)
-                      setToast(`${style.name} - ${period.label} Copied!`)
-                      setTimeout(() => setToast(null), 2000)
-                      if (onFilterSelect) {
-                        onFilterSelect({ style: style.name, period: period.label, filter, overlay })
-                      }
-                    }}
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      position: "relative",
-                      overflow: "hidden",
-                      backgroundColor: "#0d0d0d",
-                      border: "none",
-                      transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
-                      cursor: "pointer",
-                      display: "flex",
-                      flexDirection: "column",
-                      borderRadius: "var(--border-radius)",
-                    }}
-                  >
-                    <div className="aspect-ratio-box" style={{
-                      width: "100%",
-                      aspectRatio: selectedRatio,
-                      position: "relative",
-                      overflow: "hidden",
-                      borderRadius: "var(--border-radius)",
-                    }}>
-                      {imageSrc ? (
-                        <img
-                          src={imageSrc}
-                          alt=""
-                          style={{
+              {showAxisLabels && (
+                <div className="row-label" style={{
+                  width: "100px",
+                  flexShrink: 0,
+                  textAlign: "right",
+                  paddingRight: "12px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  color: textColor,
+                  letterSpacing: "-0.5px",
+                }}>
+                  {style.name}
+                </div>
+              )}
+
+              <div className="card-container" style={{
+                display: "flex",
+                flex: 1,
+                gap: gap,
+                width: "100%",
+              }}>
+                {periods.map((period) => {
+                  const { filter, overlay, blendMode } = getVibeStyles(period.label, style.id)
+                  return (
+                    <div
+                      key={`${style.id}-${period.label}`}
+                      className="card-wrapper"
+                      onClick={() => {
+                        const filterData = `filter: ${filter};`
+                        navigator.clipboard.writeText(filterData)
+                        setToast(`${style.name} - ${period.label} Copied!`)
+                        setTimeout(() => setToast(null), 2000)
+                        if (onFilterSelect) {
+                          onFilterSelect({ style: style.name, period: period.label, filter, overlay })
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        position: "relative",
+                        overflow: "hidden",
+                        backgroundColor: "#0d0d0d",
+                        border: "none",
+                        transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
+                        cursor: "pointer",
+                        display: "flex",
+                        flexDirection: "column",
+                        borderRadius: "var(--border-radius)",
+                      }}
+                    >
+                      <div className="aspect-ratio-box" style={{
+                        width: "100%",
+                        aspectRatio: selectedRatio,
+                        position: "relative",
+                        overflow: "hidden",
+                        borderRadius: "var(--border-radius)",
+                      }}>
+                        {imageSrc ? (
+                          <img
+                            src={imageSrc}
+                            alt=""
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              transition: "transform 0.6s ease",
+                              filter: filter,
+                            }}
+                          />
+                        ) : (
+                          <div style={{
                             width: "100%",
                             height: "100%",
-                            objectFit: "cover",
-                            transition: "transform 0.6s ease",
-                            filter: filter,
-                          }}
-                        />
-                      ) : (
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "10px",
+                            fontWeight: 600,
+                            color: "#333",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                            background: "linear-gradient(135deg, #111 0%, #0a0a0a 100%)",
+                          }}>Upload</div>
+                        )}
                         <div style={{
-                          width: "100%",
-                          height: "100%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "10px",
-                          fontWeight: 600,
-                          color: "#333",
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          pointerEvents: "none",
+                          background: overlay,
+                          mixBlendMode: blendMode,
+                        }} />
+                      </div>
+                      {showMobileLabels && (
+                        <div className="mobile-label" style={{
+                          marginTop: "8px",
+                          fontSize: "9px",
+                          fontWeight: 700,
+                          color: textColor,
                           textTransform: "uppercase",
-                          letterSpacing: "0.5px",
-                          background: "linear-gradient(135deg, #111 0%, #0a0a0a 100%)",
-                        }}>Upload</div>
+                          letterSpacing: "0.05em",
+                          opacity: 0.8,
+                          textAlign: "center",
+                        }}>
+                          {period.label}
+                        </div>
                       )}
-                      <div style={{
+                      <div className="glow-effect" style={{
                         position: "absolute",
                         top: 0,
                         left: 0,
                         right: 0,
                         bottom: 0,
+                        opacity: 0,
+                        transition: "opacity 0.3s ease",
                         pointerEvents: "none",
-                        background: overlay,
-                        mixBlendMode: blendMode,
+                        border: "2px solid rgba(255,255,255,0.3)",
                       }} />
                     </div>
-                    {showMobileLabels && (
-                      <div className="mobile-label" style={{
-                        marginTop: "8px",
-                        fontSize: "9px",
-                        fontWeight: 700,
-                        color: textColor,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        opacity: 0.8,
-                        textAlign: "center",
-                      }}>
-                        {period.label}
-                      </div>
-                    )}
-                    <div className="glow-effect" style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      opacity: 0,
-                      transition: "opacity 0.3s ease",
-                      pointerEvents: "none",
-                      border: "2px solid rgba(255,255,255,0.3)",
-                    }} />
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {
-        toast && (
-          <div style={{
-            position: "fixed",
-            bottom: "30px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            backgroundColor: "#fff",
-            color: "#000",
-            padding: "12px 24px",
-            borderRadius: "100px",
-            fontSize: "13px",
-            fontWeight: 700,
-            boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-            zIndex: 1000,
-            animation: "toast-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
-          }}>
-            {toast}
-          </div>
-        )
-      }
+        {
+          toast && (
+            <div style={{
+              position: "fixed",
+              bottom: "30px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              backgroundColor: "#fff",
+              color: "#000",
+              padding: "12px 24px",
+              borderRadius: "100px",
+              fontSize: "13px",
+              fontWeight: 700,
+              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+              zIndex: 1000,
+              animation: "toast-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
+            }}>
+              {toast}
+            </div>
+          )
+        }
 
-      <style dangerouslySetInnerHTML={{
-        __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
           .glow-effect:hover { 
             opacity: 1 !important; 
             box-shadow: 0 0 20px rgba(255,255,255,0.2); 
@@ -409,7 +414,8 @@ export default function VisualPalette(props) {
             display: none; 
           }
         `}} />
-    </div >
+      </div >
+    </div>
   )
 }
 
