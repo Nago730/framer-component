@@ -121,6 +121,7 @@ export default function VisualPalette(props) {
       padding: `${paddingY}px ${paddingX}px`,
       fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
       minHeight: "200px",
+      containerType: "inline-size",
     }}>
       <div style={{
         display: "flex",
@@ -316,25 +317,27 @@ export default function VisualPalette(props) {
         ))}
       </div>
 
-      {toast && (
-        <div style={{
-          position: "fixed",
-          bottom: "30px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          backgroundColor: "#fff",
-          color: "#000",
-          padding: "12px 24px",
-          borderRadius: "100px",
-          fontSize: "13px",
-          fontWeight: 700,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-          zIndex: 1000,
-          animation: "toast-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
-        }}>
-          {toast}
-        </div>
-      )}
+      {
+        toast && (
+          <div style={{
+            position: "fixed",
+            bottom: "30px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "#fff",
+            color: "#000",
+            padding: "12px 24px",
+            borderRadius: "100px",
+            fontSize: "13px",
+            fontWeight: 700,
+            boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+            zIndex: 1000,
+            animation: "toast-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
+          }}>
+            {toast}
+          </div>
+        )
+      }
 
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -353,28 +356,47 @@ export default function VisualPalette(props) {
             to { transform: translate(-50%, 0); opacity: 1; }
           }
           
-          /* Responsive: Mobile at 800px */
-          @media (max-width: 800px) {
-            .visual-palette .header-row {
-              display: none !important;
-            }
+          /* --- Tablet Layout (700px to 1000px) --- */
+          @container (max-width: 1000px) {
             .visual-palette .grid-row {
               flex-direction: column !important;
               align-items: flex-start !important;
+              gap: 12px !important;
+              margin-bottom: 24px !important;
             }
             .visual-palette .row-label {
-              width: auto !important;
+              width: 100% !important;
               text-align: left !important;
-              margin-bottom: 8px !important;
               padding-right: 0 !important;
+              margin-bottom: 4px !important;
+              font-size: 16px !important;
+              opacity: 0.9;
+            }
+            .visual-palette .header-row {
+              margin-left: 0 !important;
+              padding-left: 0 !important;
+            }
+            /* Adjust corner spacer width to 0 for vertical labels */
+            .visual-palette .header-row > div:first-child {
+               display: none !important;
+            }
+          }
+
+          /* --- Mobile Layout (Under 700px) --- */
+          @container (max-width: 700px) {
+            .visual-palette .header-row {
+              display: none !important;
             }
             .visual-palette .card-container {
               overflow-x: auto !important;
-              padding-bottom: 10px !important;
+              padding-bottom: 12px !important;
+              -webkit-overflow-scrolling: touch;
+              scrollbar-width: none;
             }
             .visual-palette .card-wrapper {
               flex-shrink: 0 !important;
-              width: 140px !important;
+              width: 160px !important;
+              min-height: auto !important;
             }
             .visual-palette .mobile-label {
               display: block !important;
@@ -386,7 +408,7 @@ export default function VisualPalette(props) {
             display: none; 
           }
         `}} />
-    </div>
+    </div >
   )
 }
 
