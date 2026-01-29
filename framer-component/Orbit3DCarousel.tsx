@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { addPropertyControls, ControlType } from "framer"
-import { useState, useMemo } from "react"
+import React, { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
 /**
@@ -44,10 +44,9 @@ const getImgSrc = (img) => {
   return img.src || ""
 }
 
-const OrbitCard = ({ item, angle, isCentered, onClick, cardWidth, cardHeight, radius, isHovered, onHover, onUnhover, showBackText }) => {
+const OrbitCard = React.memo(({ item, angle, isCentered, onClick, cardWidth, cardHeight, radius, isHovered, onHover, onUnhover, showBackText }) => {
   if (!item) return null
   const angleRad = (angle * Math.PI) / 180
-  const depth = Math.cos(angleRad) // Not strictly needed for positioning but used for opacity logic if desired, keeping simple for now
   const cardImg = getImgSrc(item.image || (item.gallery && item.gallery[0]))
 
   return (
@@ -62,7 +61,7 @@ const OrbitCard = ({ item, angle, isCentered, onClick, cardWidth, cardHeight, ra
         // Replaced complicated transform with simpler structure from Test 7
         transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
         transformStyle: "preserve-3d",
-        // backfaceVisibility: "hidden" // Optional: decide if backface should be hidden
+        willChange: "transform", // Performance hint for browser
       }}
       onClick={onClick}
       onMouseEnter={onHover}
@@ -162,7 +161,7 @@ const OrbitCard = ({ item, angle, isCentered, onClick, cardWidth, cardHeight, ra
       </motion.div>
     </motion.div>
   )
-}
+})
 
 export default function Orbit3DCarousel(props) {
   const { items = DEFAULT_ITEMS, cardWidth = 270, cardHeight = 390, radius = 400, containerHeight = 500, backgroundColor = "#0a0a0a", showControls = true, accentColor = "#4f46e5", showBackText = true, arrowColor = "#FFFFFF" } = props
