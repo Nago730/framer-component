@@ -165,7 +165,7 @@ const OrbitCard = ({ item, angle, isCentered, onClick, cardWidth, cardHeight, ra
 }
 
 export default function Orbit3DCarousel(props) {
-  const { items = DEFAULT_ITEMS, cardWidth = 180, cardHeight = 260, radius = 250, containerHeight = 500, backgroundColor = "#0a0a0a", showControls = true, accentColor = "#4f46e5", showBackText = true } = props
+  const { items = DEFAULT_ITEMS, cardWidth = 270, cardHeight = 390, radius = 400, containerHeight = 500, backgroundColor = "#0a0a0a", showControls = true, accentColor = "#4f46e5", showBackText = true, arrowColor = "#FFFFFF" } = props
   const [rotation, setRotation] = useState(0)
   const [dragRotation, setDragRotation] = useState(0)
   const [selectedItem, setSelectedItem] = useState(null)
@@ -239,10 +239,46 @@ export default function Orbit3DCarousel(props) {
           <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "15%", background: `linear-gradient(to right, ${backgroundColor}, transparent)`, pointerEvents: "none", zIndex: 3 }} />
           <div style={{ position: "absolute", top: 0, bottom: 0, right: 0, width: "15%", background: `linear-gradient(to left, ${backgroundColor}, transparent)`, pointerEvents: "none", zIndex: 3 }} />
           {showControls && (
-            <div style={{ position: "absolute", bottom: "-60px", left: "50%", transform: "translateX(-50%)", display: "flex", gap: "60px", zIndex: 4 }}>
-              <button onClick={() => setRotation(r => r + angleStep)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.2)", cursor: "pointer" }}><ChevronLeft size={48} /></button>
-              <button onClick={() => setRotation(r => r - angleStep)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.2)", cursor: "pointer" }}><ChevronRight size={48} /></button>
-            </div>
+            <>
+              <motion.button
+                whileHover={{ scale: 1.1, opacity: 1 }}
+                onClick={() => setRotation(r => r + angleStep)}
+                style={{
+                  position: "absolute",
+                  left: "20px",
+                  top: "50%",
+                  y: "-50%",
+                  background: "none",
+                  border: "none",
+                  color: arrowColor,
+                  opacity: 0.3,
+                  cursor: "pointer",
+                  zIndex: 50,
+                  padding: "20px"
+                }}
+              >
+                <ChevronLeft size={80} strokeWidth={1} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1, opacity: 1 }}
+                onClick={() => setRotation(r => r - angleStep)}
+                style={{
+                  position: "absolute",
+                  right: "20px",
+                  top: "50%",
+                  y: "-50%",
+                  background: "none",
+                  border: "none",
+                  color: arrowColor,
+                  opacity: 0.3,
+                  cursor: "pointer",
+                  zIndex: 50,
+                  padding: "20px"
+                }}
+              >
+                <ChevronRight size={80} strokeWidth={1} />
+              </motion.button>
+            </>
           )}
         </div>
       </div>
@@ -283,12 +319,13 @@ export default function Orbit3DCarousel(props) {
 
 addPropertyControls(Orbit3DCarousel, {
   items: { type: ControlType.Array, title: "Items", control: { type: ControlType.Object, controls: { name: { type: ControlType.String }, role: { type: ControlType.String }, color: { type: ControlType.Color }, image: { type: ControlType.Image }, gallery: { type: ControlType.Array, control: { type: ControlType.Image } } } }, defaultValue: DEFAULT_ITEMS },
-  cardWidth: { type: ControlType.Number, title: "Card Width", defaultValue: 180 },
-  cardHeight: { type: ControlType.Number, title: "Card Height", defaultValue: 260 },
-  radius: { type: ControlType.Number, title: "Orbit Radius", defaultValue: 250 },
+  cardWidth: { type: ControlType.Number, title: "Card Width", defaultValue: 270 },
+  cardHeight: { type: ControlType.Number, title: "Card Height", defaultValue: 390 },
+  radius: { type: ControlType.Number, title: "Orbit Radius", defaultValue: 400 },
   containerHeight: { type: ControlType.Number, title: "Height", defaultValue: 500 },
   backgroundColor: { type: ControlType.Color, title: "Background", defaultValue: "#0a0a0a" },
   accentColor: { type: ControlType.Color, title: "Ambience", defaultValue: "#4f46e5" },
   showControls: { type: ControlType.Boolean, title: "Nav Buttons", defaultValue: true },
+  arrowColor: { type: ControlType.Color, title: "Arrow Color", defaultValue: "#FFFFFF" },
   showBackText: { type: ControlType.Boolean, title: "Back Text", defaultValue: true },
 })

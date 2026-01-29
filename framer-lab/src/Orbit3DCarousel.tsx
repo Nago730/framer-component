@@ -398,20 +398,18 @@ export default function Orbit3DCarousel({
           <div className="absolute inset-y-0 right-0 w-64 bg-gradient-to-l from-[#0a0a0a] to-transparent pointer-events-none z-30" />
 
           {/* Controls */}
-          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-16 z-40">
-            <button
-              onClick={() => rotateCarousel('left')}
-              className="text-white/20 hover:text-white transition-all transform hover:scale-110"
-            >
-              <ChevronLeft size={64} strokeWidth={1} />
-            </button>
-            <button
-              onClick={() => rotateCarousel('right')}
-              className="text-white/20 hover:text-white transition-all transform hover:scale-110"
-            >
-              <ChevronRight size={64} strokeWidth={1} />
-            </button>
-          </div>
+          <button
+            onClick={() => rotateCarousel('left')}
+            className="absolute left-4 md:left-12 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all transform hover:scale-110 z-50 p-4"
+          >
+            <ChevronLeft size={80} strokeWidth={1} />
+          </button>
+          <button
+            onClick={() => rotateCarousel('right')}
+            className="absolute right-4 md:right-12 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all transform hover:scale-110 z-50 p-4"
+          >
+            <ChevronRight size={80} strokeWidth={1} />
+          </button>
         </div>
       </div>
 
