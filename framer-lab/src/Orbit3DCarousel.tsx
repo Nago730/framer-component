@@ -176,29 +176,33 @@ const OrbitCard: React.FC<OrbitCardProps> = ({
 
         {/* Back Face */}
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${item.color} rounded-lg shadow-2xl overflow-hidden flex flex-col items-center justify-between p-6 border border-white/20`}
+          className="absolute inset-0 rounded-lg shadow-2xl overflow-hidden flex flex-col items-center justify-between p-6 border border-white/20 bg-[#111]"
           style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg) translateZ(1px)',
           }}
         >
-          <div className="w-full flex justify-between items-start">
-            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">P</span>
-            </div>
-            <span className="text-white/40 text-[10px] font-bold tracking-widest uppercase">
-              Persona Profile
-            </span>
+          {/* Background Image & Overlay */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src={item.gallery[0]}
+              alt=""
+              className="w-full h-full object-cover opacity-30 blur-sm scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30" />
           </div>
 
-          <div className="text-center">
+          <div className="relative z-10 w-full flex justify-between items-start">
+          </div>
+
+          <div className="relative z-10 text-center">
             <h4 className="text-white font-black text-xl mb-1 tracking-tight">
               {item.name}
             </h4>
             <div className="h-0.5 w-8 bg-white/40 mx-auto" />
           </div>
 
-          <div className="w-full text-left">
+          <div className="relative z-10 w-full text-left">
             <p className="text-white/30 text-[8px] uppercase tracking-tighter leading-none mb-1">
               Identity
             </p>

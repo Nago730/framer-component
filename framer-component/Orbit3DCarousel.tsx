@@ -44,7 +44,7 @@ const getImgSrc = (img) => {
   return img.src || ""
 }
 
-const OrbitCard = ({ item, angle, isCentered, onClick, cardWidth, cardHeight, radius, isHovered, onHover, onUnhover }) => {
+const OrbitCard = ({ item, angle, isCentered, onClick, cardWidth, cardHeight, radius, isHovered, onHover, onUnhover, showBackText }) => {
   if (!item) return null
   const angleRad = (angle * Math.PI) / 180
   const depth = Math.cos(angleRad) // Not strictly needed for positioning but used for opacity logic if desired, keeping simple for now
@@ -109,11 +109,55 @@ const OrbitCard = ({ item, angle, isCentered, onClick, cardWidth, cardHeight, ra
             <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "10px", margin: 0, textTransform: "uppercase" }}>{item.role}</p>
           </div>
         </div>
-        {/* Backface content - kept from original */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: item.color || "#111", borderRadius: "12px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", padding: "24px", border: "1px solid rgba(255, 255, 255, 0.2)", backfaceVisibility: "hidden", transform: "rotateY(180deg) translateZ(1px)" }}>
-          <div style={{ width: "100%", display: "flex", justifyContent: "space-between" }}><div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "white", fontSize: "10px", fontWeight: "bold" }}>P</span></div></div>
-          <div style={{ textAlign: "center" }}><h4 style={{ color: "white", fontWeight: 900, fontSize: "20px", margin: 0 }}>{item.name}</h4><div style={{ height: "2px", width: "32px", background: "white", margin: "8px auto" }} /></div>
-          <div style={{ width: "100%", textAlign: "left" }}><p style={{ color: "rgba(255,255,255,0.3)", fontSize: "8px", margin: 0 }}>Identity</p><p style={{ color: "white", fontSize: "10px", fontWeight: "bold", margin: 0 }}>{item.role}</p></div>
+        {/* Backface content - Updated */}
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "#111",
+          borderRadius: "12px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center", // Centered content since top part is removed
+          padding: "24px",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+          backfaceVisibility: "hidden",
+          transform: "rotateY(180deg) translateZ(1px)",
+          overflow: "hidden"
+        }}>
+          {/* Background Image & Overlay */}
+          <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+            {cardImg && <img
+              src={cardImg}
+              alt=""
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                opacity: 0.3,
+                filter: "blur(4px)",
+                transform: "scale(1.1)"
+              }}
+            />}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4), rgba(0,0,0,0.3))" }} />
+          </div>
+
+          {showBackText && (
+            <>
+              <div style={{ textAlign: "center", position: "relative", zIndex: 1, marginBottom: "20px" }}>
+                <h4 style={{ color: "white", fontWeight: 900, fontSize: "20px", margin: 0 }}>{item.name}</h4>
+                <div style={{ height: "2px", width: "32px", background: "white", margin: "8px auto" }} />
+              </div>
+
+              <div style={{ width: "100%", textAlign: "center", position: "relative", zIndex: 1 }}> {/* Centered text alignment looks better without top part */}
+                <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "8px", margin: 0, textTransform: "uppercase" }}>Identity</p>
+                <p style={{ color: "white", fontSize: "10px", fontWeight: "bold", margin: 0, textTransform: "uppercase" }}>{item.role}</p>
+              </div>
+            </>
+          )}
         </div>
       </motion.div>
     </motion.div>
@@ -121,7 +165,7 @@ const OrbitCard = ({ item, angle, isCentered, onClick, cardWidth, cardHeight, ra
 }
 
 export default function Orbit3DCarousel(props) {
-  const { items = DEFAULT_ITEMS, cardWidth = 180, cardHeight = 260, radius = 450, containerHeight = 500, backgroundColor = "#0a0a0a", showControls = true, accentColor = "#4f46e5" } = props
+  const { items = DEFAULT_ITEMS, cardWidth = 180, cardHeight = 260, radius = 250, containerHeight = 500, backgroundColor = "#0a0a0a", showControls = true, accentColor = "#4f46e5", showBackText = true } = props
   const [rotation, setRotation] = useState(0)
   const [dragRotation, setDragRotation] = useState(0)
   const [selectedItem, setSelectedItem] = useState(null)
@@ -186,6 +230,7 @@ export default function Orbit3DCarousel(props) {
                 isHovered={hoveredId === (item.id || index)}
                 onHover={() => setHoveredId(item.id || index)}
                 onUnhover={() => setHoveredId(null)}
+                showBackText={showBackText}
               />
             ))}
           </motion.div>
@@ -206,10 +251,18 @@ export default function Orbit3DCarousel(props) {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "32px" }}>
             <div onClick={() => setSelectedItem(null)} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.9)", backdropFilter: "blur(20px)" }} />
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ position: "relative", width: "100%", maxWidth: "1000px", height: "80vh", background: "#111", borderRadius: "32px", overflow: "hidden", display: "flex" }}>
-              <div style={{ width: "35%", padding: "40px", background: selectedItem.color || "#222" }}>
-                <button onClick={() => setSelectedItem(null)} style={{ background: "rgba(0,0,0,0.2)", border: "none", borderRadius: "50%", padding: "10px", color: "white", cursor: "pointer" }}><X size={20} /></button>
-                <h2 style={{ fontSize: "36px", color: "white", margin: "32px 0 16px" }}>{selectedItem.name}</h2>
-                <p style={{ color: "rgba(255,255,255,0.7)", textTransform: "uppercase" }}>{selectedItem.role}</p>
+              <div style={{ width: "35%", padding: "40px", background: selectedItem.color || "#222", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <div>
+                  <button onClick={() => setSelectedItem(null)} style={{ background: "rgba(0,0,0,0.2)", border: "none", borderRadius: "50%", padding: "10px", color: "white", cursor: "pointer" }}><X size={20} /></button>
+                  <h2 style={{ fontSize: "36px", color: "white", margin: "32px 0 16px" }}>{selectedItem.name}</h2>
+                  <p style={{ color: "rgba(255,255,255,0.7)", textTransform: "uppercase" }}>{selectedItem.role}</p>
+                </div>
+                <div>
+                  <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", lineHeight: "1.6", fontWeight: 500 }}>
+                    A deep dive into the creative process and the visual world of {selectedItem.name}. Explore the curated selection of works.
+                  </p>
+                  <div style={{ height: "4px", width: "64px", background: "rgba(255,255,255,0.2)", marginTop: "24px" }} />
+                </div>
               </div>
               <div style={{ width: "65%", padding: "40px", overflowY: "auto", background: "#050505" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "20px" }}>
@@ -232,9 +285,10 @@ addPropertyControls(Orbit3DCarousel, {
   items: { type: ControlType.Array, title: "Items", control: { type: ControlType.Object, controls: { name: { type: ControlType.String }, role: { type: ControlType.String }, color: { type: ControlType.Color }, image: { type: ControlType.Image }, gallery: { type: ControlType.Array, control: { type: ControlType.Image } } } }, defaultValue: DEFAULT_ITEMS },
   cardWidth: { type: ControlType.Number, title: "Card Width", defaultValue: 180 },
   cardHeight: { type: ControlType.Number, title: "Card Height", defaultValue: 260 },
-  radius: { type: ControlType.Number, title: "Orbit Radius", defaultValue: 450 },
+  radius: { type: ControlType.Number, title: "Orbit Radius", defaultValue: 250 },
   containerHeight: { type: ControlType.Number, title: "Height", defaultValue: 500 },
   backgroundColor: { type: ControlType.Color, title: "Background", defaultValue: "#0a0a0a" },
   accentColor: { type: ControlType.Color, title: "Ambience", defaultValue: "#4f46e5" },
   showControls: { type: ControlType.Boolean, title: "Nav Buttons", defaultValue: true },
+  showBackText: { type: ControlType.Boolean, title: "Back Text", defaultValue: true },
 })
